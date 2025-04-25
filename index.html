@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #a7c5bd, #c3aed6, #ffc9de, #f7d9ab);
+            background-size: 400% 400%;
+            animation: gradientFlow 20s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            color: #2d3436;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.88);
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            z-index: 1;
+            position: relative;
+        }
+
+        h3 {
+            font-size: 3.2rem;
+            margin-bottom: 25px;
+            color: #444;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.1);
+        }
+
+        a {
+            display: inline-block;
+            padding: 14px 32px;
+            background-color: #a29bfe;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        a:hover {
+            background-color: #6c5ce7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Sparkles */
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: white;
+            opacity: 0.4;
+            border-radius: 50%;
+            animation: sparkleFall 10s linear infinite;
+        }
+
+        @keyframes sparkleFall {
+            0% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(110vh) scale(0.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sparkles Effect -->
+    <script>
+        for (let i = 0; i < 30; i++) {
+            const sparkle = document.createElement("div");
+            sparkle.classList.add("sparkle");
+            sparkle.style.left = `${Math.random() * 100}vw`;
+            sparkle.style.animationDelay = `${Math.random() * 10}s`;
+            sparkle.style.top = `${Math.random() * 100 - 50}px`;
+            document.body.appendChild(sparkle);
+        }
+    </script>
+
+    <div class="container">
+        <h3>Welcome to My Website</h3>
+        <p>
+            <a href="https://us-east-13hy54suzr.auth.us-east-1.amazoncognito.com/login?client_id=7kmd0g5t4nl1j16dif18aejjlc&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Flogged_in.html">
+                Register or Login
+            </a>
+        </p>
+    </div>
+
+</body>
+</html>
