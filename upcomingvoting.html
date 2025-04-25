@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upcoming Voting</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(-45deg, #f3ec78, #af4261, #7f7fd5, #86fde8);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            margin-top: 60px;
+            font-size: 2.8rem;
+            color: #fff;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .countdown {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
+            width: 300px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .countdown:hover {
+            transform: scale(1.05);
+        }
+
+        .small-button {
+            margin: 10px;
+            padding: 10px 18px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .small-button:hover {
+            background-color: #0056b3;
+            transform: scale(1.08);
+        }
+
+        .ended {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upcoming Voting Events</h1>
+    
+    <div class="countdown">
+        <p>Voting Event 1 starts in: <span id="timer1"></span></p>
+    </div>
+
+    <div class="countdown">
+        <p>Voting Event 2 starts in: <span id="timer2"></span></p>
+    </div>
+
+    <div class="countdown">
+        <p>Voting Event 3: <span class="ended">Time Ended - Unable to Vote</span></p>
+    </div>
+
+    <div>
+        <button class="small-button" onclick="window.location.href='logged_in.html'">Back to Voting</button>
+        <button class="small-button" onclick="window.location.href='https://us-east-13hy54suzr.auth.us-east-1.amazoncognito.com/login?client_id=7kmd0g5t4nl1j16dif18aejjlc&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Flogged_in.html'">Logout</button>
+    </div>
+
+    <script>
+        function startCountdown(targetDate, elementId) {
+            function updateCountdown() {
+                const now = new Date();
+                const timeDifference = targetDate - now;
+
+                if (timeDifference <= 0) {
+                    document.getElementById(elementId).textContent = "Voting is LIVE!";
+                    return;
+                }
+
+                const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+                document.getElementById(elementId).textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        const event1Date = new Date();
+        event1Date.setDate(event1Date.getDate() + 2);
+
+        const event2Date = new Date();
+        event2Date.setDate(event2Date.getDate() + 5);
+
+        startCountdown(event1Date, "timer1");
+        startCountdown(event2Date, "timer2");
+    </script>
+</body>
+</html>

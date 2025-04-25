@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results Overview</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #ffecd2, #fcb69f, #a1c4fd, #c2e9fb);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px 20px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #222;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            width: 90%;
+            max-width: 700px;
+        }
+
+        canvas {
+            margin-top: 10px;
+        }
+
+        .button {
+            margin: 15px 10px 0;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        }
+
+        .logout-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #dc3545;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .logout-button:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Results Overview</h1>
+    <div class="chart-container">
+        <canvas id="resultsChart"></canvas>
+    </div>
+
+    <button class="button" onclick="location.href='results.html'">Back</button>
+    <button class="button" id="downloadButton">Download Overall Results</button>
+    <button class="logout-button" onclick="logout()">Logout</button>
+
+    <script>
+        async function fetchResults() {
+    try {
+        const API_URL = "https://42selq7sdk.execute-api.us-east-1.amazonaws.com/prod/results";
+        const response = await fetch(API_URL, {
+            method: "GET",
+            mode: "cors",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const responseData = await response.json();
+        console.log("Raw response:", responseData);
+
+        const data = typeof responseData.body === "string"
+            ? JSON.parse(responseData.body)
+            : responseData.body;
+
+        console.log("Parsed data:", data);
+
+        if (Array.isArray(data) && data.length > 0) {
+            data.forEach(item => console.log("Item:", item));
+            data.sort((a, b) => b.vote_count - a.vote_count);
+            const totalVotes = data.reduce((sum, item) => sum + item.vote_count, 0);
+
+            const formattedData = data.map(item => ({
+                option: (item.option || item["option "] || "Unknown").trim(),
+                votes: item.vote_count,
+                percentage: totalVotes > 0
+                    ? ((item.vote_count / totalVotes) * 100).toFixed(2)
+                    : "0.00"
+            }));
+
+            console.log("Formatted data for chart:", formattedData);
+
+            renderChart(formattedData);
+            window.resultsData = formattedData;
+        } else {
+            console.warn("No data received or empty array");
+        }
+
+    } catch (error) {
+        console.error("Error fetching results:", error);
+    }
+}
+
+    
+        function renderChart(data) {
+            const labels = data.map(item => `${item.option} (${item.percentage}%)`);
+            const votes = data.map(item => item.votes);
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Votes',
+                        data: votes,
+                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const currentDate = new Date().toLocaleString();
+            doc.text(`Results Overview - ${currentDate}`, 10, 10);
+    
+            let yOffset = 20;
+            window.resultsData.forEach(result => {
+                doc.text(`${result.option}: ${result.votes} votes (${result.percentage}%)`, 10, yOffset);
+                yOffset += 10;
+            });
+    
+            doc.save('results-overview.pdf');
+        }
+    
+        function logout() {
+            window.location.href = "https://us-east-13hy54suzr.auth.us-east-1.amazoncognito.com/login?client_id=7kmd0g5t4nl1j16dif18aejjlc&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Flogged_in.html";
+        }
+    
+        document.getElementById('downloadButton').addEventListener('click', generatePDF);
+    
+        fetchResults();
+    </script>
+    

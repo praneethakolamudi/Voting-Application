@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Voting Results</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .results-container {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            color: #333;
+        }
+
+        .results-container h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #222;
+        }
+
+        .results-container p {
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+
+        #results p {
+            font-size: 1.2rem;
+            margin: 6px 0;
+            color: #2d2d2d;
+        }
+
+        .button {
+            padding: 12px 28px;
+            margin: 10px 10px 0;
+            background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s, box-shadow 0.3s;
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="results-container">
+        <h1>Voting Results</h1>
+        <p>Thank you for casting your vote!</p>
+        <div id="results">Loading results...</div>
+        <button class="button" onclick="location.href='logged_in.html'">Vote Again</button>
+        <button class="button" onclick="location.href='overview.html'">Overview Results</button>
+    </div>
+
+    <script>
+        async function fetchResults() {
+            try {
+                const API_URL = "https://42selq7sdk.execute-api.us-east-1.amazonaws.com/prod/results";
+
+                const response = await fetch(API_URL, {
+                    method: "GET",
+                    mode: "cors",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                const data = typeof responseData.body === "string" ? JSON.parse(responseData.body) : responseData.body;
+
+                let resultsHTML = "";
+
+                if (Array.isArray(data)) {
+                    data.sort((a, b) => b.vote_count - a.vote_count);
+
+                    data.forEach(item => {
+                        if (item.option && typeof item.option === "string") {
+                            resultsHTML += `<p><strong>${item.option.trim()}</strong>: ${item.vote_count} votes</p>`;
+                        } else {
+                            resultsHTML += `<p>Invalid entry found</p>`;
+                        }
+                    });
+                } else {
+                    resultsHTML = "<p>Invalid response format.</p>";
+                }
+
+                document.getElementById("results").innerHTML = resultsHTML;
+            } catch (error) {
+                document.getElementById("results").innerHTML = "<p>Error fetching results. Please try again later.</p>";
+                console.error("Error fetching results:", error);
+            }
+        }
+
+        fetchResults();
+    </script>
+</body>
+</html>
